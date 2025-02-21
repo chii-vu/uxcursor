@@ -18,25 +18,29 @@ public void draw() {}
 
 
 
-
 public class Point {
   int x;
   int y;
+  
   public Point(int x, int y) {
     this.x = x;
     this.y = y;
   }
 }
 
-//Rectangle class stores its top left point, and it's height
-//Other three points are calculated using the REC_WIDTH constant, and its height
+
 public class Rectangle {
   boolean isTarget;
-  Point topLeftPoint;
-  int recHeight;
-  public Rectangle(Point p, int h) {
-    topLeftPoint = p;
-    recHeight = h;
+  Point topLeft;
+  Point topRight;
+  Point bottomLeft;
+  Point bottomRight;
+  
+  public Rectangle(Point p1, Point p2, Point p3, Point p4) {
+    topLeft = p1;
+    topRight = p2;
+    bottomLeft = p3;
+    bottomRight = p4;
   }
 }
 
@@ -57,7 +61,11 @@ public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
    for (int i = 0; i < numX; i++) {
      for (int j = 0; j < numY; j++) {
        Point topLeft = new Point(outsideXPadding + i * totalWidth, outsideYPadding + j * totalHeight);
-       Rectangle newRec = new Rectangle(topLeft, recHeight);
+       Point topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
+       Point bottomLeft = new Point(topLeft.x, topLeft.y + recHeight);
+       Point bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + recHeight);
+       
+       Rectangle newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
        
        //assign target
        if (i == randX && j == randY) {
@@ -80,24 +88,23 @@ public void renderRecs(ArrayList<Rectangle> recs) {
     else {
       fill(255, 255, 255);
     }
-    
-    //get points
-    int up = recs.get(i).topLeftPoint.y;
-    int left = recs.get(i).topLeftPoint.x;
-    int right = recs.get(i).topLeftPoint.x + REC_WIDTH;
-    int down = recs.get(i).topLeftPoint.y + recs.get(i).recHeight;
-    
+        
     //draw
-    quad(left, up, right, up, right, down, left, down);
+    quad(recs.get(i).topLeft.x, recs.get(i).topLeft.y, 
+      recs.get(i).topRight.x, recs.get(i).topRight.y, 
+      recs.get(i).bottomRight.x, recs.get(i).bottomRight.y, 
+      recs.get(i).bottomLeft.x, recs.get(i).bottomLeft.y);
   }
 }
 
 public boolean isPointInRec(Point p, Rectangle rec) {
-  if (p.x >= rec.topLeftPoint.x && p.y >= rec.topLeftPoint.y 
-    && p.x <= rec.topLeftPoint.x + REC_WIDTH && p.y <= rec.topLeftPoint.y + rec.recHeight) {
+  if (p.x >= rec.topLeft.x && p.x <= rec.topRight.x
+    && p.y >= rec.topLeft.y && p.y <= rec.bottomLeft.y)
+  {
     return true;
   }
-  else {
+  else 
+  {
     return false;
   }
 }
