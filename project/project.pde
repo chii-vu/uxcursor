@@ -1,5 +1,5 @@
 //HYPER PARAMS
-final int REC_WIDTH = 350;
+final int REC_WIDTH = 200;
 
 //rectangles
 ArrayList<Rectangle> displayedRecs;
@@ -8,6 +8,8 @@ ArrayList<Rectangle> displayedRecs;
 public void setup() {
   fullScreen();
   
+  //example usage vv
+  //Try varying the params below, and the width hyper param above
   displayedRecs = constructRecs(40, 30);
   renderRecs(displayedRecs);
 }
@@ -26,6 +28,8 @@ public class Point {
   }
 }
 
+//Rectangle class stores its top left point, and it's height
+//Other three points are calculated using the REC_WIDTH constant, and its height
 public class Rectangle {
   Point topLeftPoint;
   int recHeight;
