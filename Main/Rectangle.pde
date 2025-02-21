@@ -11,4 +11,8 @@ public class Rectangle {
     bottomLeft = p3;
     bottomRight = p4;
   }
+  
+  public boolean isClicked(int mX, int mY) {
+     return mX >= topLeft.x && mX <= topRight.x && mY >= topLeft.y && mY <= bottomLeft.y;
+  }
 }

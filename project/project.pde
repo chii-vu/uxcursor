@@ -3,7 +3,6 @@ final int REC_WIDTH = 200;
 
 //rectangles
 ArrayList<Rectangle> displayedRecs;
-Rectangle target;
 
 
 public void setup() {
@@ -11,11 +10,40 @@ public void setup() {
   
   //example usage vv
   //Try varying the params below, and the width hyper param above
-  displayedRecs = constructRecs(40, 30);
+  displayedRecs = constructRecs(40, 100);
   renderRecs(displayedRecs);
 }
 
 public void draw() {}
+
+
+
+public class Point {
+  int x;
+  int y;
+  
+  public Point(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+
+public class Rectangle {
+  boolean isTarget;
+  Point topLeft;
+  Point topRight;
+  Point bottomLeft;
+  Point bottomRight;
+  
+  public Rectangle(Point p1, Point p2, Point p3, Point p4) {
+    topLeft = p1;
+    topRight = p2;
+    bottomLeft = p3;
+    bottomRight = p4;
+  }
+}
+
 
 public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
    int totalWidth = REC_WIDTH + recDistance;
@@ -42,7 +70,6 @@ public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
        //assign target
        if (i == randX && j == randY) {
          newRec.isTarget = true;
-         target = newRec;
        }
        
        createdRecs.add(newRec);
@@ -76,10 +103,4 @@ public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
   float distance = sqrt(dx * dx + dy * dy);
   return distance;
-}
-
-void mousePressed() {
-  if (target != null) {
-    print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
-  }
 }
