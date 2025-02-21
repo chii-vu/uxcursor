@@ -97,14 +97,10 @@ public void renderRecs(ArrayList<Rectangle> recs) {
   }
 }
 
-public boolean isPointInRec(Point p, Rectangle rec) {
-  if (p.x >= rec.topLeft.x && p.x <= rec.topRight.x
-    && p.y >= rec.topLeft.y && p.y <= rec.bottomLeft.y)
-  {
-    return true;
-  }
-  else 
-  {
-    return false;
-  }
+
+public float distanceFromPointToRec(Point p, Rectangle rec) {
+  float dx = max(rec.topLeft.x - p.x, 0, p.x - rec.topRight.x);
+  float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
+  float distance = sqrt(dx * dx + dy * dy);
+  return distance;
 }
