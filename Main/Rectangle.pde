@@ -16,6 +16,7 @@ public class Rectangle {
      return mX >= topLeft.x && mX <= topRight.x && mY >= topLeft.y && mY <= bottomLeft.y;
      
     //// Pseudo code for different cursors
+    // Test commit
     //if (cursorType == area):
     //  return cursorOverlap();
     //else if (cursorType == bubble):
