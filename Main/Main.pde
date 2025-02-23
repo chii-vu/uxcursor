@@ -3,18 +3,78 @@ final int REC_WIDTH = 200;
 
 //rectangles
 ArrayList<Rectangle> displayedRecs;
+Rectangle target;
+ExperimentPhase studyStage;
+// variable use for debugging/testing
+boolean trialStarted = false;
+
+// State machine
+public enum ExperimentPhase {
+  INSTRUCTIONS, 
+  BEFORE_TRIAL, 
+  TRIAL, 
+  FINISHED
+}
 
 
 public void setup() {
   fullScreen();
+  studyStage = ExperimentPhase.INSTRUCTIONS;
   
-  //example usage vv
-  //Try varying the params below, and the width hyper param above
-  displayedRecs = constructRecs(40, 30);
-  renderRecs(displayedRecs);
 }
 
-public void draw() {}
+void draw() {
+  background(200);
+  /**
+   * Part of the state machine that displays the process of the trials through all the conditions
+   */
+  switch(studyStage) {
+    case INSTRUCTIONS:
+      displayCenteredText("Instructions\nClick on the target rectangle");
+      break;
+    case  BEFORE_TRIAL:
+      displayCenteredText("Before condition\nClick to start the trial");
+      break;
+    case TRIAL:
+      //example usage vv
+      //Try varying the params below, and the width hyper param above
+      if (!trialStarted) {
+        displayedRecs = constructRecs(40, 30);
+        trialStarted = true;
+      }
+      renderRecs(displayedRecs);
+      break;
+    case FINISHED:
+      displayCenteredText("Your job is complete, please look at the console for your test results.");
+      break;
+  }
+}
+
+void displayCenteredText(String text) {
+  fill(0, 0, 0);
+  textSize(25);
+  textAlign(CENTER);
+  text(text, width/2, height/2);
+}
+
+void mousePressed() {
+  switch(studyStage) {
+    case INSTRUCTIONS:
+      studyStage = ExperimentPhase.BEFORE_TRIAL;
+      break;
+    case BEFORE_TRIAL:
+      studyStage = ExperimentPhase.TRIAL;
+      break;
+    case TRIAL:
+      if (target != null) {
+        print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
+      }
+      studyStage = ExperimentPhase.FINISHED;
+      break;
+    case FINISHED:
+      break;
+  }
+}
 
 public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
    int totalWidth = REC_WIDTH + recDistance;
@@ -41,6 +101,7 @@ public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
        //assign target
        if (i == randX && j == randY) {
          newRec.isTarget = true;
+         target = newRec;
        }
        
        createdRecs.add(newRec);
