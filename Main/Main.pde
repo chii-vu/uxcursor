@@ -11,9 +11,9 @@ boolean trialStarted = false;
 // State machine
 public enum ExperimentPhase {
   INSTRUCTIONS, 
-  BEFORE_CONDITION, 
+  BEFORE_TRIAL, 
   TRIAL, 
-  FINISHED,
+  FINISHED
 }
 
 
@@ -25,23 +25,15 @@ public void setup() {
 
 void draw() {
   background(200);
-   /**
+  /**
    * Part of the state machine that displays the process of the trials through all the conditions
    */
   switch(studyStage) {
     case INSTRUCTIONS:
-      textSize(50);
-      fill(0, 0, 0);
-      text("Instructions", width/2 * 0.88, height * 0.35);
-      textSize(60);
-      text("Click to continue", width/2 * 0.82, height * 0.65);
+      displayCenteredText("Instructions\nClick on the target rectangle");
       break;
-    case BEFORE_CONDITION:
-      textSize(50);
-      text("Before condition", width/2 * 0.85, height * 0.35);
-      textSize(60);
-      fill(0, 0, 0);
-      text("Click to continue", width/2 * 0.82, height * 0.65);
+    case  BEFORE_TRIAL:
+      displayCenteredText("Before condition\nClick to start the trial");
       break;
     case TRIAL:
       //example usage vv
@@ -53,20 +45,24 @@ void draw() {
       renderRecs(displayedRecs);
       break;
     case FINISHED:
-      fill(211);
-      textSize(30);
-      fill(0, 51, 102);
-      text("Your job is complete, please look at the console for your test results", 870, 590);
+      displayCenteredText("Your job is complete, please look at the console for your test results.");
       break;
   }
+}
+
+void displayCenteredText(String text) {
+  fill(0, 0, 0);
+  textSize(25);
+  textAlign(CENTER);
+  text(text, width/2, height/2);
 }
 
 void mousePressed() {
   switch(studyStage) {
     case INSTRUCTIONS:
-      studyStage = ExperimentPhase.BEFORE_CONDITION;
+      studyStage = ExperimentPhase.BEFORE_TRIAL;
       break;
-    case BEFORE_CONDITION:
+    case BEFORE_TRIAL:
       studyStage = ExperimentPhase.TRIAL;
       break;
     case TRIAL:
