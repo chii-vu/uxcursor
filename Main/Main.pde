@@ -34,7 +34,7 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorPhase.AREA;
+  cursorType = CursorPhase.BUBBLE;
 }
 
 void draw() {
@@ -86,7 +86,7 @@ void mousePressed() {
       break;
     case TRIAL:
       if (target != null) {
-        print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
+        print(target.isClicked() ? "Target is clicked \n" : "Target not clicked \n");
       }
       studyStage = ExperimentPhase.FINISHED;
       break;
@@ -96,6 +96,7 @@ void mousePressed() {
 }
 
 void mouseMoved(){
+  // Mouse's current position
   Point position = new Point(mouseX, mouseY);
 
   switch(studyStage) {
@@ -106,14 +107,15 @@ void mouseMoved(){
     case TRIAL:
       // Which rectangle is closest to the cursor?
       
-      // preset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
+      // reset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
       Rectangle closestRectangle = displayedRecs.get(0);
       float closestDistance = 10000;
     
       // calculate distances between all rectangles and cursor
       for (int i = 0; i < displayedRecs.size(); i++) {
         Rectangle currentRectangle = displayedRecs.get(i);
-        currentRectangle.isClosest = false;
+        // Resetting all rectangles to false
+        currentRectangle.isTargetted = false;
          float distance = distanceFromPointToRec(position, currentRectangle);
          // If currently the closest, update values
          if (distance < closestDistance){
@@ -125,18 +127,21 @@ void mouseMoved(){
       // mark closest rectangle -- depending on cursor type
       switch(cursorType){
         case STANDARD:
+          // Is the cursor on the closest rectangle
           if(closestDistance <= 0){
-            closestRectangle.isClosest = true;
+            closestRectangle.isTargetted = true;
           }
           break;
         case AREA:
+          // Is the closest rectangle within the area's hitbox
           if(closestDistance <= areaHitBox){
-            closestRectangle.isClosest = true;
+            closestRectangle.isTargetted = true;
           }
           break;
         case BUBBLE:
-            closestRectangle.isClosest = true;
-            break;
+          // No limits on Bubble - whoever is closest is targetted
+          closestRectangle.isTargetted = true;
+          break;
        }
       break;
     case FINISHED:
@@ -190,7 +195,7 @@ public void renderRecs(ArrayList<Rectangle> recs) {
     }
     
     //stroke - blue if hovered on
-    if(recs.get(i).isClosest){
+    if(recs.get(i).isTargetted){
       stroke(0, 0, 255);
     }
     else{
