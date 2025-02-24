@@ -16,8 +16,8 @@ float areaHitBox = 35;
 // which cursor is in use?
 public enum CursorPhase {
   STANDARD,
-    AREA,
-    BUBBLE
+  AREA,
+  BUBBLE
 }
 
 
@@ -25,9 +25,9 @@ public enum CursorPhase {
 // State machine
 public enum ExperimentPhase {
   INSTRUCTIONS,
-    BEFORE_TRIAL,
-    TRIAL,
-    FINISHED
+  BEFORE_TRIAL,
+  TRIAL,
+  FINISHED
 }
 
 
@@ -43,28 +43,28 @@ void draw() {
    * Part of the state machine that displays the process of the trials through all the conditions
    */
   switch(studyStage) {
-  case INSTRUCTIONS:
-    displayCenteredText("Instructions\nClick on the target rectangle");
-    break;
-  case  BEFORE_TRIAL:
-    displayCenteredText("Before condition\nClick to start the trial");
-    break;
-  case TRIAL:
-    //example usage vv
-    //Try varying the params below, and the width hyper param above
-    if (!trialStarted) {
-      displayedRecs = constructRecs(40, 30);
-      trialStarted = true;
-    }
-    renderRecs(displayedRecs);
-    if(cursorType == CursorPhase.AREA){
-      // draw mouse
-      circle(mouseX, mouseY, areaHitBox*2);
-    }
-    break;
-  case FINISHED:
-    displayCenteredText("Your job is complete, please look at the console for your test results.");
-    break;
+    case INSTRUCTIONS:
+      displayCenteredText("Instructions\nClick on the target rectangle");
+      break;
+    case  BEFORE_TRIAL:
+      displayCenteredText("Before condition\nClick to start the trial");
+      break;
+    case TRIAL:
+      //example usage vv
+      //Try varying the params below, and the width hyper param above
+      if (!trialStarted) {
+        displayedRecs = constructRecs(40, 30);
+        trialStarted = true;
+      }
+      renderRecs(displayedRecs);
+      if(cursorType == CursorPhase.AREA){
+        // draw mouse
+        circle(mouseX, mouseY, areaHitBox*2);
+      }
+      break;
+    case FINISHED:
+      displayCenteredText("Your job is complete, please look at the console for your test results.");
+      break;
   }
    //<>//
 }
@@ -78,20 +78,20 @@ void displayCenteredText(String text) {
 
 void mousePressed() {
   switch(studyStage) {
-  case INSTRUCTIONS:
-    studyStage = ExperimentPhase.BEFORE_TRIAL;
-    break;
-  case BEFORE_TRIAL:
-    studyStage = ExperimentPhase.TRIAL;
-    break;
-  case TRIAL:
-    if (target != null) {
-      print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
-    }
-    studyStage = ExperimentPhase.FINISHED;
-    break;
-  case FINISHED:
-    break;
+    case INSTRUCTIONS:
+      studyStage = ExperimentPhase.BEFORE_TRIAL;
+      break;
+    case BEFORE_TRIAL:
+      studyStage = ExperimentPhase.TRIAL;
+      break;
+    case TRIAL:
+      if (target != null) {
+        print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
+      }
+      studyStage = ExperimentPhase.FINISHED;
+      break;
+    case FINISHED:
+      break;
   }
 }
 
@@ -99,48 +99,48 @@ void mouseMoved(){
   Point position = new Point(mouseX, mouseY);
 
   switch(studyStage) {
-  case INSTRUCTIONS:
-    break;
-  case BEFORE_TRIAL:
-    break;
-  case TRIAL:
-    // Which rectangle is closest to the cursor?
+    case INSTRUCTIONS:
+      break;
+    case BEFORE_TRIAL:
+      break;
+    case TRIAL:
+      // Which rectangle is closest to the cursor?
+      
+      // preset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
+      Rectangle closestRectangle = displayedRecs.get(0);
+      float closestDistance = 10000;
     
-    // preset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
-    Rectangle closestRectangle = displayedRecs.get(0);
-    float closestDistance = 10000;
-  
-    // calculate distances between all rectangles and cursor
-    for (int i = 0; i < displayedRecs.size(); i++) {
-      Rectangle currentRectangle = displayedRecs.get(i);
-      currentRectangle.isClosest = false;
-       float distance = distanceFromPointToRec(position, currentRectangle);
-       // If currently the closest, update values
-       if (distance < closestDistance){
-         closestRectangle = currentRectangle;
-         closestDistance = distance;
-       }
-    }
-   
-    // mark closest rectangle -- depending on cursor type
-    switch(cursorType){
-      case STANDARD:
-        if(closestDistance <= 0){
-          closestRectangle.isClosest = true;
-        }
-        break;
-      case AREA:
-        if(closestDistance <= areaHitBox){
-          closestRectangle.isClosest = true;
-        }
-        break;
-      case BUBBLE:
-          closestRectangle.isClosest = true;
+      // calculate distances between all rectangles and cursor
+      for (int i = 0; i < displayedRecs.size(); i++) {
+        Rectangle currentRectangle = displayedRecs.get(i);
+        currentRectangle.isClosest = false;
+         float distance = distanceFromPointToRec(position, currentRectangle);
+         // If currently the closest, update values
+         if (distance < closestDistance){
+           closestRectangle = currentRectangle;
+           closestDistance = distance;
+         }
+      }
+     
+      // mark closest rectangle -- depending on cursor type
+      switch(cursorType){
+        case STANDARD:
+          if(closestDistance <= 0){
+            closestRectangle.isClosest = true;
+          }
           break;
-     }
-    break;
-  case FINISHED:
-    break;
+        case AREA:
+          if(closestDistance <= areaHitBox){
+            closestRectangle.isClosest = true;
+          }
+          break;
+        case BUBBLE:
+            closestRectangle.isClosest = true;
+            break;
+       }
+      break;
+    case FINISHED:
+      break;
   }
   
 }
