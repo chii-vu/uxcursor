@@ -7,20 +7,34 @@ Rectangle target;
 ExperimentPhase studyStage;
 // variable use for debugging/testing
 boolean trialStarted = false;
+// current cursor in use
+CursorPhase cursorType;
+// radius size of Area Cursor hitbox
+float areaHitBox = 35;
+
+
+// which cursor is in use?
+public enum CursorPhase {
+  STANDARD,
+    AREA,
+    BUBBLE
+}
+
+
 
 // State machine
 public enum ExperimentPhase {
-  INSTRUCTIONS, 
-  BEFORE_TRIAL, 
-  TRIAL, 
-  FINISHED
+  INSTRUCTIONS,
+    BEFORE_TRIAL,
+    TRIAL,
+    FINISHED
 }
 
 
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  
+  cursorType = CursorPhase.AREA;
 }
 
 void draw() {
@@ -29,25 +43,30 @@ void draw() {
    * Part of the state machine that displays the process of the trials through all the conditions
    */
   switch(studyStage) {
-    case INSTRUCTIONS:
-      displayCenteredText("Instructions\nClick on the target rectangle");
-      break;
-    case  BEFORE_TRIAL:
-      displayCenteredText("Before condition\nClick to start the trial");
-      break;
-    case TRIAL:
-      //example usage vv
-      //Try varying the params below, and the width hyper param above
-      if (!trialStarted) {
-        displayedRecs = constructRecs(40, 30);
-        trialStarted = true;
-      }
-      renderRecs(displayedRecs);
-      break;
-    case FINISHED:
-      displayCenteredText("Your job is complete, please look at the console for your test results.");
-      break;
+  case INSTRUCTIONS:
+    displayCenteredText("Instructions\nClick on the target rectangle");
+    break;
+  case  BEFORE_TRIAL:
+    displayCenteredText("Before condition\nClick to start the trial");
+    break;
+  case TRIAL:
+    //example usage vv
+    //Try varying the params below, and the width hyper param above
+    if (!trialStarted) {
+      displayedRecs = constructRecs(40, 30);
+      trialStarted = true;
+    }
+    renderRecs(displayedRecs);
+    if(cursorType == CursorPhase.AREA){
+      // draw mouse
+      circle(mouseX, mouseY, areaHitBox*2);
+    }
+    break;
+  case FINISHED:
+    displayCenteredText("Your job is complete, please look at the console for your test results.");
+    break;
   }
+   //<>//
 }
 
 void displayCenteredText(String text) {
@@ -59,72 +78,129 @@ void displayCenteredText(String text) {
 
 void mousePressed() {
   switch(studyStage) {
-    case INSTRUCTIONS:
-      studyStage = ExperimentPhase.BEFORE_TRIAL;
-      break;
-    case BEFORE_TRIAL:
-      studyStage = ExperimentPhase.TRIAL;
-      break;
-    case TRIAL:
-      if (target != null) {
-        print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
-      }
-      studyStage = ExperimentPhase.FINISHED;
-      break;
-    case FINISHED:
-      break;
+  case INSTRUCTIONS:
+    studyStage = ExperimentPhase.BEFORE_TRIAL;
+    break;
+  case BEFORE_TRIAL:
+    studyStage = ExperimentPhase.TRIAL;
+    break;
+  case TRIAL:
+    if (target != null) {
+      print(target.isClicked(mouseX, mouseY) ? "Target is clicked \n" : "Target not clicked \n");
+    }
+    studyStage = ExperimentPhase.FINISHED;
+    break;
+  case FINISHED:
+    break;
   }
 }
 
-public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
-   int totalWidth = REC_WIDTH + recDistance;
-   int totalHeight = recHeight + recDistance;
-   int numX = width / (totalWidth);
-   int numY = height / (totalHeight);
-   int outsideXPadding = (width - (numX * totalWidth) + recDistance) / 2;
-   int outsideYPadding = (height - (numY * totalHeight) + recDistance) / 2;
-   
-   //Pick random target
-   int randX = (int)random(0, numX);
-   int randY = (int)random(0, numY);
-   
-   ArrayList<Rectangle> createdRecs = new ArrayList<Rectangle>();
-   for (int i = 0; i < numX; i++) {
-     for (int j = 0; j < numY; j++) {
-       Point topLeft = new Point(outsideXPadding + i * totalWidth, outsideYPadding + j * totalHeight);
-       Point topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
-       Point bottomLeft = new Point(topLeft.x, topLeft.y + recHeight);
-       Point bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + recHeight);
-       
-       Rectangle newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
-       
-       //assign target
-       if (i == randX && j == randY) {
-         newRec.isTarget = true;
-         target = newRec;
+void mouseMoved(){
+  Point position = new Point(mouseX, mouseY);
+
+  switch(studyStage) {
+  case INSTRUCTIONS:
+    break;
+  case BEFORE_TRIAL:
+    break;
+  case TRIAL:
+    // Which rectangle is closest to the cursor?
+    
+    // preset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
+    Rectangle closestRectangle = displayedRecs.get(0);
+    float closestDistance = 10000;
+  
+    // calculate distances between all rectangles and cursor
+    for (int i = 0; i < displayedRecs.size(); i++) {
+      Rectangle currentRectangle = displayedRecs.get(i);
+      currentRectangle.isClosest = false;
+       float distance = distanceFromPointToRec(position, currentRectangle);
+       // If currently the closest, update values
+       if (distance < closestDistance){
+         closestRectangle = currentRectangle;
+         closestDistance = distance;
        }
-       
-       createdRecs.add(newRec);
+    }
+   
+    // mark closest rectangle -- depending on cursor type
+    switch(cursorType){
+      case STANDARD:
+        if(closestDistance <= 0){
+          closestRectangle.isClosest = true;
+        }
+        break;
+      case AREA:
+        if(closestDistance <= areaHitBox){
+          closestRectangle.isClosest = true;
+        }
+        break;
+      case BUBBLE:
+          closestRectangle.isClosest = true;
+          break;
      }
-   }
-   return createdRecs;
+    break;
+  case FINISHED:
+    break;
+  }
+  
+}
+
+public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
+  int totalWidth = REC_WIDTH + recDistance;
+  int totalHeight = recHeight + recDistance;
+  int numX = width / (totalWidth);
+  int numY = height / (totalHeight);
+  int outsideXPadding = (width - (numX * totalWidth) + recDistance) / 2;
+  int outsideYPadding = (height - (numY * totalHeight) + recDistance) / 2;
+
+  //Pick random target
+  int randX = (int)random(0, numX);
+  int randY = (int)random(0, numY);
+
+  ArrayList<Rectangle> createdRecs = new ArrayList<Rectangle>();
+  for (int i = 0; i < numX; i++) {
+    for (int j = 0; j < numY; j++) {
+      Point topLeft = new Point(outsideXPadding + i * totalWidth, outsideYPadding + j * totalHeight);
+      Point topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
+      Point bottomLeft = new Point(topLeft.x, topLeft.y + recHeight);
+      Point bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + recHeight);
+
+      Rectangle newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
+
+      //assign target
+      if (i == randX && j == randY) {
+        newRec.isTarget = true;
+        target = newRec;
+      }
+
+      createdRecs.add(newRec);
+    }
+  }
+  return createdRecs;
 }
 
 public void renderRecs(ArrayList<Rectangle> recs) {
   for (int i = 0; i < recs.size(); i++) {
-    
+
     //color
     if (recs.get(i).isTarget) {
       fill(0, 200, 0);
-    }
-    else {
+    } else {
       fill(255, 255, 255);
     }
-        
+    
+    //stroke - blue if hovered on
+    if(recs.get(i).isClosest){
+      stroke(0, 0, 255);
+    }
+    else{
+      stroke(0, 0, 0);
+    }
+
     //draw
-    quad(recs.get(i).topLeft.x, recs.get(i).topLeft.y, 
-      recs.get(i).topRight.x, recs.get(i).topRight.y, 
-      recs.get(i).bottomRight.x, recs.get(i).bottomRight.y, 
+    quad(recs.get(i).topLeft.x, recs.get(i).topLeft.y,
+      recs.get(i).topRight.x, recs.get(i).topRight.y,
+      recs.get(i).bottomRight.x, recs.get(i).bottomRight.y,
       recs.get(i).bottomLeft.x, recs.get(i).bottomLeft.y);
   }
 }
