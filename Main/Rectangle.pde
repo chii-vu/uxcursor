@@ -4,7 +4,7 @@ public class Rectangle {
   Point topRight;
   Point bottomLeft;
   Point bottomRight;
-  boolean isTargetted;
+  boolean isTargeted;
   
   
   public Rectangle(Point p1, Point p2, Point p3, Point p4) {
@@ -16,6 +16,6 @@ public class Rectangle {
   
   public boolean isClicked() {
      // If the current rectangle is targetted - then it will be the one clicked
-     return isTargetted;
+     return isTargeted;
   }
 }

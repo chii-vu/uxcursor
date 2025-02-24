@@ -115,7 +115,7 @@ void mouseMoved(){
       for (int i = 0; i < displayedRecs.size(); i++) {
         Rectangle currentRectangle = displayedRecs.get(i);
         // Resetting all rectangles to false
-        currentRectangle.isTargetted = false;
+        currentRectangle.isTargeted = false;
          float distance = distanceFromPointToRec(position, currentRectangle);
          // If currently the closest, update values
          if (distance < closestDistance){
@@ -129,18 +129,18 @@ void mouseMoved(){
         case STANDARD:
           // Is the cursor on the closest rectangle
           if(closestDistance <= 0){
-            closestRectangle.isTargetted = true;
+            closestRectangle.isTargeted = true;
           }
           break;
         case AREA:
           // Is the closest rectangle within the area's hitbox
           if(closestDistance <= areaHitBox){
-            closestRectangle.isTargetted = true;
+            closestRectangle.isTargeted = true;
           }
           break;
         case BUBBLE:
-          // No limits on Bubble - whoever is closest is targetted
-          closestRectangle.isTargetted = true;
+          // No limits on Bubble - whoever is closest is targeted
+          closestRectangle.isTargeted = true;
           break;
        }
       break;
@@ -195,7 +195,7 @@ public void renderRecs(ArrayList<Rectangle> recs) {
     }
     
     //stroke - blue if hovered on
-    if(recs.get(i).isTargetted){
+    if(recs.get(i).isTargeted){
       stroke(0, 0, 255);
     }
     else{
