@@ -34,7 +34,7 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorPhase.BUBBLE;
+  cursorType = CursorPhase.AREA;
 }
 
 void draw() {
@@ -58,7 +58,8 @@ void draw() {
       }
       renderRecs(displayedRecs);
       if(cursorType == CursorPhase.AREA){
-        // draw mouse
+        // draw hitbox
+        noFill();
         circle(mouseX, mouseY, areaHitBox*2);
       }
       break;
