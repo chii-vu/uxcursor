@@ -16,6 +16,9 @@ float areaHitBox = 35;
 Condition currentCondition;
 int currentTrialIndex = 0;
 
+// Mouse position tracking
+Point trialStartPosition;
+
 // which cursor is in use?
 public enum CursorType {
   STANDARD,
@@ -57,7 +60,9 @@ void draw() {
       if (!trialStarted) {
         displayedRecs = constructRecs(40, 30);
         trialStarted = true;
-        currentCondition.startTrial();
+        // Record the mouse position when the trial starts
+        trialStartPosition = new Point(mouseX, mouseY);
+        currentCondition.startTrial(trialStartPosition);
       }
       renderRecs(displayedRecs);
       if (cursorType == CursorType.AREA) {
@@ -91,12 +96,15 @@ void mousePressed() {
       if (target != null) {
         boolean isCorrect = target.isClicked();
         print(isCorrect ? "Target is clicked \n" : "Target not clicked \n");
-        currentCondition.endTrial(isCorrect);
+        // Record the mouse position when the trial ends
+        Point trialEndPosition = new Point(mouseX, mouseY);
+        currentCondition.endTrial(isCorrect, trialEndPosition);
         if (currentTrialIndex < currentCondition.numTrials - 1) {
           currentTrialIndex++;
           trialStarted = false;
         } else {
           studyStage = ExperimentPhase.FINISHED;
+          currentCondition.printTrialsCSV();
         }
       }
       break;
