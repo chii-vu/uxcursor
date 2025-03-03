@@ -37,7 +37,7 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorType.AREA;
+  cursorType = CursorType.BUBBLE;
   // Test with sample condition
   currentCondition = new Condition(cursorType, 10, 100, 50);
 }
@@ -70,6 +70,15 @@ void draw() {
         noFill();
         circle(mouseX, mouseY, areaHitBox * 2);
       }
+
+      if (cursorType == CursorType.BUBBLE) {
+        float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
+        noFill();
+        stroke(255, 0, 0);  // Red outline for the bubble cursor hitbox
+        strokeWeight(2);
+        circle(mouseX, mouseY, bubbleRadius * 2);
+      }
+
       break;
     case FINISHED:
       displayCenteredText("Your job is complete, please look at the console for your test results.");
@@ -89,16 +98,20 @@ void mousePressed() {
     case INSTRUCTIONS:
       studyStage = ExperimentPhase.BEFORE_TRIAL;
       break;
+
     case BEFORE_TRIAL:
       studyStage = ExperimentPhase.TRIAL;
       break;
+
     case TRIAL:
       if (target != null) {
-        boolean isCorrect = target.isClicked();
+        boolean isCorrect = target.isTargeted;  // Use the flag set in mouseMoved()
         print(isCorrect ? "Target is clicked \n" : "Target not clicked \n");
+
         // Record the mouse position when the trial ends
         Point trialEndPosition = new Point(mouseX, mouseY);
         currentCondition.endTrial(isCorrect, trialEndPosition);
+
         if (currentTrialIndex < currentCondition.numTrials - 1) {
           currentTrialIndex++;
           trialStarted = false;
@@ -108,55 +121,60 @@ void mousePressed() {
         }
       }
       break;
+
     case FINISHED:
       break;
   }
 }
 
 void mouseMoved() {
-  // Mouse's current position
   Point position = new Point(mouseX, mouseY);
-  switch (studyStage) {
-    case TRIAL:
-      // Which rectangle is closest to the cursor?
 
-      // reset default values to track closest rectangle and distance -- Sorry this feels a bit messy!
-      Rectangle closestRectangle = displayedRecs.get(0);
-      float closestDistance = 10000;
+  if (studyStage == ExperimentPhase.TRIAL) {
+    for (Rectangle rec : displayedRecs) {
+      rec.isTargeted = false;
+    }
 
-      // calculate distances between all rectangles and cursor
-      for (int i = 0; i < displayedRecs.size(); i++) {
-        Rectangle currentRectangle = displayedRecs.get(i);
-        // Resetting all rectangles to false
-        currentRectangle.isTargeted = false;
-        float distance = distanceFromPointToRec(position, currentRectangle);
-        // If currently the closest, update values
-        if (distance < closestDistance) {
-          closestRectangle = currentRectangle;
-          closestDistance = distance;
+    Rectangle selectedRectangle = null;
+
+    switch (cursorType) {
+      case STANDARD:
+        for (Rectangle rec : displayedRecs) {
+          if (rec.contains(position)) {
+            selectedRectangle = rec;
+            break;
+          }
         }
-      }
+        break;
 
-      // mark closest rectangle -- depending on cursor type
-      switch (cursorType) {
-        case STANDARD:
-          // Is the cursor on the closest rectangle
-          if (closestDistance <= 0) {
-            closestRectangle.isTargeted = true;
+      case AREA:
+        float maxOverlap = 0;
+        for (Rectangle rec : displayedRecs) {
+          float overlapArea = computeOverlapArea(position, rec, areaHitBox);
+          if (overlapArea > maxOverlap) {
+            maxOverlap = overlapArea;
+            selectedRectangle = rec;
           }
-          break;
-        case AREA:
-          // Is the closest rectangle within the area's hitbox
-          if (closestDistance <= areaHitBox) {
-            closestRectangle.isTargeted = true;
+        }
+        break;
+
+      case BUBBLE:
+        float bubbleRadius = computeBubbleRadius(position);
+        float closestDistance = Float.MAX_VALUE;
+
+        for (Rectangle rec : displayedRecs) {
+          float distance = distanceFromPointToRec(position, rec);
+          if (distance < bubbleRadius && distance < closestDistance) {
+            closestDistance = distance;
+            selectedRectangle = rec;
           }
-          break;
-        case BUBBLE:
-          // No limits on Bubble - whoever is closest is targeted
-          closestRectangle.isTargeted = true;
-          break;
-      }
-      break;
+        }
+        break;
+    }
+
+    if (selectedRectangle != null) {
+      selectedRectangle.isTargeted = true;
+    }
   }
 }
 
@@ -195,27 +213,29 @@ public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
 }
 
 public void renderRecs(ArrayList<Rectangle> recs) {
-  for (int i = 0; i < recs.size(); i++) {
+  for (Rectangle rec : recs) {
+    // Fill colour
+    fill(rec.isTarget ? color(0, 200, 0) : color(255));
 
-    // color
-    if (recs.get(i).isTarget) {
-      fill(0, 200, 0);
+    // Blue border for area cursor target
+    if (rec.isTargeted) {
+      if (cursorType == CursorType.AREA) {
+        stroke(0, 0, 255);
+        strokeWeight(3);
+      } else {
+        stroke(0);
+        strokeWeight(1);
+      }
     } else {
-      fill(255, 255, 255);
+      stroke(0);
+      strokeWeight(1);
     }
 
-    // stroke - blue if hovered on
-    if (recs.get(i).isTargeted) {
-      stroke(0, 0, 255);
-    } else {
-      stroke(0, 0, 0);
-    }
-
-    // draw
-    quad(recs.get(i).topLeft.x, recs.get(i).topLeft.y,
-      recs.get(i).topRight.x, recs.get(i).topRight.y,
-      recs.get(i).bottomRight.x, recs.get(i).bottomRight.y,
-      recs.get(i).bottomLeft.x, recs.get(i).bottomLeft.y);
+    // Draw rectangle
+    quad(rec.topLeft.x, rec.topLeft.y,
+         rec.topRight.x, rec.topRight.y,
+         rec.bottomRight.x, rec.bottomRight.y,
+         rec.bottomLeft.x, rec.bottomLeft.y);
   }
 }
 
@@ -224,4 +244,39 @@ public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
   float distance = sqrt(dx * dx + dy * dy);
   return distance;
+}
+
+float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
+  float circleLeft = cursor.x - radius;
+  float circleRight = cursor.x + radius;
+  float circleTop = cursor.y - radius;
+  float circleBottom = cursor.y + radius;
+
+  float rectLeft = rec.topLeft.x;
+  float rectRight = rec.topRight.x;
+  float rectTop = rec.topLeft.y;
+  float rectBottom = rec.bottomLeft.y;
+
+  float overlapWidth = max(0, min(circleRight, rectRight) - max(circleLeft, rectLeft));
+  float overlapHeight = max(0, min(circleBottom, rectBottom) - max(circleTop, rectTop));
+
+  return overlapWidth * overlapHeight;
+}
+
+float computeBubbleRadius(Point cursor) {
+  float minDistance = Float.MAX_VALUE;
+  float maxDistance = 0;
+
+  for (Rectangle rec : displayedRecs) {
+    float distance = distanceFromPointToRec(cursor, rec);
+    if (distance < minDistance) {
+      minDistance = distance;
+    }
+    if (distance > maxDistance) {
+      maxDistance = distance;
+    }
+  }
+
+  float radius = (minDistance < maxDistance) ? minDistance : maxDistance * 0.5;
+  return max(radius, 10);  // Set min size so it doesn't return a speck
 }
