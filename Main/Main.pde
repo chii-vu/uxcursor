@@ -106,7 +106,6 @@ void mousePressed() {
     case TRIAL:
       if (target != null) {
         boolean isCorrect = target.isTargeted;  // Use the flag set in mouseMoved()
-        print(isCorrect ? "Target is clicked \n" : "Target not clicked \n");
 
         // Record the mouse position when the trial ends
         Point trialEndPosition = new Point(mouseX, mouseY);
