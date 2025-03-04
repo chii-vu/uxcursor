@@ -39,7 +39,7 @@ public void setup() {
   studyStage = ExperimentPhase.INSTRUCTIONS;
   cursorType = CursorType.BUBBLE;
   // Test with sample condition
-  currentCondition = new Condition(cursorType, 10, 100, 50);
+  currentCondition = new Condition(cursorType, 10, 300, 50);
 }
 
 void draw() {
@@ -216,16 +216,18 @@ public void renderRecs(ArrayList<Rectangle> recs) {
     // Fill colour
     fill(rec.isTarget ? color(0, 200, 0) : color(255));
 
-    // Blue border for area cursor target
     if (rec.isTargeted) {
       if (cursorType == CursorType.AREA) {
+        // Blue border for area cursor target
         stroke(0, 0, 255);
         strokeWeight(3);
-      } else {
-        stroke(0);
-        strokeWeight(1);
+      } else if (cursorType == CursorType.BUBBLE) {
+        // Red border for bubble cursor target
+        stroke(255, 0, 0);
+        strokeWeight(3);
       }
     } else {
+      // No outline for standard cursor and non-targeted rectangles
       stroke(0);
       strokeWeight(1);
     }
