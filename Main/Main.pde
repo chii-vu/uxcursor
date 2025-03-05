@@ -39,7 +39,7 @@ public void setup() {
   studyStage = ExperimentPhase.INSTRUCTIONS;
   cursorType = CursorType.BUBBLE;
   // Test with sample condition
-  currentCondition = new Condition(cursorType, 10, 300, 50);
+  currentCondition = new Condition(cursorType, 10, 50, 30);
 }
 
 void draw() {
@@ -58,7 +58,7 @@ void draw() {
       // example usage vv
       // Try varying the params below, and the width hyper param above
       if (!trialStarted) {
-        displayedRecs = constructRecs(40, 30);
+        displayedRecs = constructRecs(currentCondition);
         trialStarted = true;
         // Record the mouse position when the trial starts
         trialStartPosition = new Point(mouseX, mouseY);
@@ -163,7 +163,7 @@ void mouseMoved() {
 
         for (Rectangle rec : displayedRecs) {
           float distance = distanceFromPointToRec(position, rec);
-          if (distance < bubbleRadius && distance < closestDistance) {
+          if (distance <= bubbleRadius && distance <= closestDistance) {
             closestDistance = distance;
             selectedRectangle = rec;
           }
@@ -177,7 +177,9 @@ void mouseMoved() {
   }
 }
 
-public ArrayList<Rectangle> constructRecs(int recHeight, int recDistance) {
+public ArrayList<Rectangle> constructRecs(Condition condition) {
+  int recHeight = condition.targetSize;
+  int recDistance = condition.targetDistance;
   int totalWidth = REC_WIDTH + recDistance;
   int totalHeight = recHeight + recDistance;
   int numX = width / (totalWidth);
