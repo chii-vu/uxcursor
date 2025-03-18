@@ -201,41 +201,47 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
 
 public void renderRecs(ArrayList<Rectangle> recs) {
   for (Rectangle rec : recs) {
-    // Fill colour
+    // Fill colour 
     fill(rec.isTarget ? color(0, 200, 0) : color(255));
-
+    
     if (rec.isTargeted) {
-      if (cursorType == CursorType.AREA) {
-        // Blue border for area cursor target
-        stroke(0, 0, 255);
-        strokeWeight(3);
-      } else if (cursorType == CursorType.AREA) {
-        // Green border for standard cursor target
-        stroke(0, 255, 0);
-        strokeWeight(3);
+      strokeWeight(3);
+      // Choose stroke colour based on cursor type
+      switch(cursorType) {
+        case AREA:
+          stroke(0, 0, 255); // Blue for area cursor
+          break;
+        case STANDARD:
+          stroke(0, 255, 0); // Green for standard cursor
+          break;
+        default:
+          strokeWeight(1);
+          stroke(0);
+          break;
       }
     } else {
-      // No outline for non-targeted rectangles
       stroke(0);
       strokeWeight(1);
     }
-
-    // Draw rectangle
+    
+    // Draw the rectangle
     quad(rec.topLeft.x, rec.topLeft.y,
          rec.topRight.x, rec.topRight.y,
          rec.bottomRight.x, rec.bottomRight.y,
          rec.bottomLeft.x, rec.bottomLeft.y);
-         
-   if (rec.isTargeted && cursorType == CursorType.BUBBLE) {
-    noStroke();
-    fill(255, 0, 0, 100);
-    quad(rec.topLeft.x - 5, rec.topLeft.y - 5,
-       rec.topRight.x + 5, rec.topRight.y - 5,
-       rec.bottomRight.x + 5, rec.bottomRight.y + 5,
-       rec.bottomLeft.x - 5, rec.bottomLeft.y + 5);
-   }
- }
+    
+    // For bubble cursor, add extra bubble on targeted rectangle
+    if (rec.isTargeted && cursorType == CursorType.BUBBLE) {
+      noStroke();
+      fill(255, 0, 0, 100);
+      quad(rec.topLeft.x - 5, rec.topLeft.y - 5,
+           rec.topRight.x + 5, rec.topRight.y - 5,
+           rec.bottomRight.x + 5, rec.bottomRight.y + 5,
+           rec.bottomLeft.x - 5, rec.bottomLeft.y + 5);
+    }
+  }
 }
+
 
 public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dx = max(rec.topLeft.x - p.x, 0, p.x - rec.topRight.x);
@@ -278,9 +284,6 @@ float computeBubbleRadius(Point cursor) {
   return max(radius, 10);  // Set min size so it doesn't return a speck
 }
 
-/**
-* 
-*/
 void drawHitbox() {
   if (cursorType == CursorType.AREA) {
       // draw hitbox
