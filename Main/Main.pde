@@ -227,9 +227,13 @@ public void renderRecs(ArrayList<Rectangle> recs) {
         // Red border for bubble cursor target
         stroke(255, 0, 0);
         strokeWeight(3);
+      } else {
+        // Green border for standard cursor target
+        stroke(0, 255, 0);
+        strokeWeight(3);
       }
     } else {
-      // No outline for standard cursor and non-targeted rectangles
+      // No outline for non-targeted rectangles
       stroke(0);
       strokeWeight(1);
     }
