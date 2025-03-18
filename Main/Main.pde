@@ -37,7 +37,7 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorType.BUBBLE;
+  cursorType = CursorType.AREA;
   // Test with sample condition
   currentCondition = new Condition(cursorType, 10, 50, 30);
 }
@@ -65,20 +65,7 @@ void draw() {
         currentCondition.startTrial(trialStartPosition);
       }
       renderRecs(displayedRecs);
-      if (cursorType == CursorType.AREA) {
-        // draw hitbox
-        noFill();
-        circle(mouseX, mouseY, areaHitBox * 2);
-      }
-
-      if (cursorType == CursorType.BUBBLE) {
-        float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
-        noFill();
-        stroke(255, 0, 0);  // Red outline for the bubble cursor hitbox
-        strokeWeight(2);
-        circle(mouseX, mouseY, bubbleRadius * 2);
-      }
-
+      drawHitbox();
       break;
     case FINISHED:
       displayCenteredText("Your job is complete, please look at the console for your test results.");
@@ -127,53 +114,52 @@ void mousePressed() {
 }
 
 void mouseMoved() {
+  if (studyStage != ExperimentPhase.TRIAL) return;
   Point position = new Point(mouseX, mouseY);
 
-  if (studyStage == ExperimentPhase.TRIAL) {
-    for (Rectangle rec : displayedRecs) {
-      rec.isTargeted = false;
-    }
+  for (Rectangle rec : displayedRecs) {
+    rec.isTargeted = false;
+  }
 
-    Rectangle selectedRectangle = null;
+  Rectangle selectedRectangle = null;
 
-    switch (cursorType) {
-      case STANDARD:
-        for (Rectangle rec : displayedRecs) {
-          if (rec.contains(position)) {
-            selectedRectangle = rec;
-            break;
-          }
+  switch (cursorType) {
+    case STANDARD:
+      for (Rectangle rec : displayedRecs) {
+        if (rec.contains(position)) {
+          selectedRectangle = rec;
+          break;
         }
-        break;
+      }
+      break;
 
-      case AREA:
-        float maxOverlap = 0;
-        for (Rectangle rec : displayedRecs) {
-          float overlapArea = computeOverlapArea(position, rec, areaHitBox);
-          if (overlapArea > maxOverlap) {
-            maxOverlap = overlapArea;
-            selectedRectangle = rec;
-          }
+    case AREA:
+      float maxOverlap = 0;
+      for (Rectangle rec : displayedRecs) {
+        float overlapArea = computeOverlapArea(position, rec, areaHitBox);
+        if (overlapArea > maxOverlap) {
+          maxOverlap = overlapArea;
+          selectedRectangle = rec;
         }
-        break;
+      }
+      break;
 
-      case BUBBLE:
-        float bubbleRadius = computeBubbleRadius(position);
-        float closestDistance = Float.MAX_VALUE;
+    case BUBBLE:
+      float bubbleRadius = computeBubbleRadius(position);
+      float closestDistance = Float.MAX_VALUE;
 
-        for (Rectangle rec : displayedRecs) {
-          float distance = distanceFromPointToRec(position, rec);
-          if (distance <= bubbleRadius && distance <= closestDistance) {
-            closestDistance = distance;
-            selectedRectangle = rec;
-          }
+      for (Rectangle rec : displayedRecs) {
+        float distance = distanceFromPointToRec(position, rec);
+        if (distance <= bubbleRadius && distance <= closestDistance) {
+          closestDistance = distance;
+          selectedRectangle = rec;
         }
-        break;
-    }
+      }
+      break;
+  }
 
-    if (selectedRectangle != null) {
-      selectedRectangle.isTargeted = true;
-    }
+  if (selectedRectangle != null) {
+    selectedRectangle.isTargeted = true;
   }
 }
 
@@ -249,8 +235,7 @@ public void renderRecs(ArrayList<Rectangle> recs) {
 public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dx = max(rec.topLeft.x - p.x, 0, p.x - rec.topRight.x);
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
-  float distance = sqrt(dx * dx + dy * dy);
-  return distance;
+  return sqrt(dx * dx + dy * dy);
 }
 
 float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
@@ -286,4 +271,21 @@ float computeBubbleRadius(Point cursor) {
 
   float radius = (minDistance < maxDistance) ? minDistance : maxDistance * 0.5;
   return max(radius, 10);  // Set min size so it doesn't return a speck
+}
+
+/**
+* 
+*/
+void drawHitbox() {
+  if (cursorType == CursorType.AREA) {
+      // draw hitbox
+      noFill();
+      circle(mouseX, mouseY, areaHitBox * 2);
+  } else if (cursorType == CursorType.BUBBLE) {
+      float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
+      noFill();
+      stroke(255, 0, 0);  // Red outline for the bubble cursor hitbox
+      strokeWeight(2);
+      circle(mouseX, mouseY, bubbleRadius * 2);
+  }
 }
