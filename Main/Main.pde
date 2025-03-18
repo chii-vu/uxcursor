@@ -37,7 +37,7 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorType.AREA;
+  cursorType = CursorType.BUBBLE;
   // Test with sample condition
   currentCondition = new Condition(cursorType, 10, 50, 30);
 }
@@ -209,11 +209,7 @@ public void renderRecs(ArrayList<Rectangle> recs) {
         // Blue border for area cursor target
         stroke(0, 0, 255);
         strokeWeight(3);
-      } else if (cursorType == CursorType.BUBBLE) {
-        // Red border for bubble cursor target
-        stroke(255, 0, 0);
-        strokeWeight(3);
-      } else {
+      } else if (cursorType == CursorType.AREA) {
         // Green border for standard cursor target
         stroke(0, 255, 0);
         strokeWeight(3);
@@ -229,7 +225,16 @@ public void renderRecs(ArrayList<Rectangle> recs) {
          rec.topRight.x, rec.topRight.y,
          rec.bottomRight.x, rec.bottomRight.y,
          rec.bottomLeft.x, rec.bottomLeft.y);
-  }
+         
+   if (rec.isTargeted && cursorType == CursorType.BUBBLE) {
+    noStroke();
+    fill(255, 0, 0, 100);
+    quad(rec.topLeft.x - 5, rec.topLeft.y - 5,
+       rec.topRight.x + 5, rec.topRight.y - 5,
+       rec.bottomRight.x + 5, rec.bottomRight.y + 5,
+       rec.bottomLeft.x - 5, rec.bottomLeft.y + 5);
+   }
+ }
 }
 
 public float distanceFromPointToRec(Point p, Rectangle rec) {
@@ -283,9 +288,8 @@ void drawHitbox() {
       circle(mouseX, mouseY, areaHitBox * 2);
   } else if (cursorType == CursorType.BUBBLE) {
       float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
-      noFill();
-      stroke(255, 0, 0);  // Red outline for the bubble cursor hitbox
-      strokeWeight(2);
+      noStroke();
+      fill(255, 0, 0, 100);
       circle(mouseX, mouseY, bubbleRadius * 2);
   }
 }
