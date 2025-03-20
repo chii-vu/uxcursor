@@ -62,6 +62,7 @@ void draw() {
         trialStarted = true;
         // Record the mouse position when the trial starts
         trialStartPosition = new Point(mouseX, mouseY);
+        lookForSelectedTarget(trialStartPosition);
         currentCondition.startTrial(trialStartPosition);
       }
       renderRecs(displayedRecs);
@@ -115,52 +116,8 @@ void mousePressed() {
 
 void mouseMoved() {
   if (studyStage != ExperimentPhase.TRIAL) return;
-  Point position = new Point(mouseX, mouseY);
+  lookForSelectedTarget(new Point(mouseX, mouseY));
 
-  for (Rectangle rec : displayedRecs) {
-    rec.isTargeted = false;
-  }
-
-  Rectangle selectedRectangle = null;
-
-  switch (cursorType) {
-    case STANDARD:
-      for (Rectangle rec : displayedRecs) {
-        if (rec.contains(position)) {
-          selectedRectangle = rec;
-          break;
-        }
-      }
-      break;
-
-    case AREA:
-      float maxOverlap = 0;
-      for (Rectangle rec : displayedRecs) {
-        float overlapArea = computeOverlapArea(position, rec, areaHitBox);
-        if (overlapArea > maxOverlap) {
-          maxOverlap = overlapArea;
-          selectedRectangle = rec;
-        }
-      }
-      break;
-
-    case BUBBLE:
-      float bubbleRadius = computeBubbleRadius(position);
-      float closestDistance = Float.MAX_VALUE;
-
-      for (Rectangle rec : displayedRecs) {
-        float distance = distanceFromPointToRec(position, rec);
-        if (distance <= bubbleRadius && distance <= closestDistance) {
-          closestDistance = distance;
-          selectedRectangle = rec;
-        }
-      }
-      break;
-  }
-
-  if (selectedRectangle != null) {
-    selectedRectangle.isTargeted = true;
-  }
 }
 
 public ArrayList<Rectangle> constructRecs(Condition condition) {
@@ -294,5 +251,52 @@ void drawHitbox() {
       noStroke();
       fill(255, 0, 0, 100);
       circle(mouseX, mouseY, bubbleRadius * 2);
+  }
+}
+
+void lookForSelectedTarget(Point position) {
+  for (Rectangle rec : displayedRecs) {
+    rec.isTargeted = false;
+  }
+
+  Rectangle selectedRectangle = null;
+
+  switch (cursorType) {
+    case STANDARD:
+      for (Rectangle rec : displayedRecs) {
+        if (rec.contains(position)) {
+          selectedRectangle = rec;
+          break;
+        }
+      }
+      break;
+
+    case AREA:
+      float maxOverlap = 0;
+      for (Rectangle rec : displayedRecs) {
+        float overlapArea = computeOverlapArea(position, rec, areaHitBox);
+        if (overlapArea > maxOverlap) {
+          maxOverlap = overlapArea;
+          selectedRectangle = rec;
+        }
+      }
+      break;
+
+    case BUBBLE:
+      float bubbleRadius = computeBubbleRadius(position);
+      float closestDistance = Float.MAX_VALUE;
+
+      for (Rectangle rec : displayedRecs) {
+        float distance = distanceFromPointToRec(position, rec);
+        if (distance <= bubbleRadius && distance <= closestDistance) {
+          closestDistance = distance;
+          selectedRectangle = rec;
+        }
+      }
+      break;
+  }
+
+  if (selectedRectangle != null) {
+    selectedRectangle.isTargeted = true;
   }
 }
