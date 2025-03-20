@@ -19,14 +19,18 @@ int currentTrialIndex = 0;
 // Mouse position tracking
 Point trialStartPosition;
 
-// which cursor is in use?
+/**
+ * Enum representing the types of cursors
+ */
 public enum CursorType {
   STANDARD,
   AREA,
   BUBBLE
 }
 
-// State machine
+/**
+ * Enum representing different phases of experiment
+ */
 public enum ExperimentPhase {
   INSTRUCTIONS,
   BEFORE_TRIAL,
@@ -34,6 +38,9 @@ public enum ExperimentPhase {
   FINISHED
 }
 
+/**
+ * Sets up experiment by setting initial experiment phase
+ */
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
@@ -42,6 +49,9 @@ public void setup() {
   currentCondition = new Condition(cursorType, 10, 50, 30);
 }
 
+/**
+ * Manages the display aspect of the experiment using the different phases
+ */
 void draw() {
   background(200);
   /**
@@ -74,6 +84,9 @@ void draw() {
   }
 }
 
+/**
+ * Displays centred text
+ */
 void displayCenteredText(String text) {
   fill(0, 0, 0);
   textSize(25);
@@ -81,6 +94,9 @@ void displayCenteredText(String text) {
   text(text, width / 2, height / 2);
 }
 
+/**
+ * Manages mouse pressed events. Moves through the trial and records final trial data.
+ */
 void mousePressed() {
   switch (studyStage) {
     case INSTRUCTIONS:
@@ -114,12 +130,22 @@ void mousePressed() {
   }
 }
 
+/**
+ * Manages mouse movement events only during the trial phase. Updates the selected target based on mouse position.
+ */
 void mouseMoved() {
   if (studyStage != ExperimentPhase.TRIAL) return;
   lookForSelectedTarget(new Point(mouseX, mouseY));
 
 }
 
+/**
+ * Creates an ArrayList of rectangles based on the experiment conditions and chooses a random rectangle to be
+ * the target.
+ *
+ * @param condition The condition of the experiment, defines rectangle size and distance between them.
+ * @return An ArrayList of Rectangles
+ */
 public ArrayList<Rectangle> constructRecs(Condition condition) {
   int recHeight = condition.targetSize;
   int recDistance = condition.targetDistance;
@@ -156,6 +182,11 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
   return createdRecs;
 }
 
+/**
+ * Renders the given list of rectangles
+ *
+ * @param recs ArrayList of rectangles to display
+ */
 public void renderRecs(ArrayList<Rectangle> recs) {
   for (Rectangle rec : recs) {
     // Fill colour 
@@ -199,13 +230,27 @@ public void renderRecs(ArrayList<Rectangle> recs) {
   }
 }
 
-
+/**
+ * Calculates the distance from a given point to the closest edge of a rectangle.
+ *
+ * @param p A point from which the distance to a rectangle is calculated
+ * @param rec The rectangle from which the distance to the point is measured.
+ * @return The distance
+ */
 public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dx = max(rec.topLeft.x - p.x, 0, p.x - rec.topRight.x);
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
   return sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Calculates the overlapping area between a circle and a rectangle.
+ *
+ * @param cursor The point at the centre of the circle
+ * @param rec The rectangle
+ * @param radius The radius of the circle
+ * @return The area of the overlap
+ */
 float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
   float circleLeft = cursor.x - radius;
   float circleRight = cursor.x + radius;
@@ -223,6 +268,12 @@ float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
   return overlapWidth * overlapHeight;
 }
 
+/**
+ * Computes the radius of the bubble cursor
+ *
+ * @param cursor The current position of the cursor
+ * @return The bubble radius
+ */
 float computeBubbleRadius(Point cursor) {
   float minDistance = Float.MAX_VALUE;
   float maxDistance = 0;
@@ -241,6 +292,10 @@ float computeBubbleRadius(Point cursor) {
   return max(radius, 10);  // Set min size so it doesn't return a speck
 }
 
+/**
+ * Draws the hitbox around the cursor. For an area cursor, draws a simple circle; for 
+ * a bubble cursor, draws a bubble effect with a dynamic radius.
+ */
 void drawHitbox() {
   if (cursorType == CursorType.AREA) {
       // draw hitbox
@@ -254,6 +309,12 @@ void drawHitbox() {
   }
 }
 
+/**
+ * Looks for a selected rectangle as a target; does this based on the current cursor position, and the 
+ * type of cursor.
+ *
+ * @param position The current position of the cursor.
+ */
 void lookForSelectedTarget(Point position) {
   for (Rectangle rec : displayedRecs) {
     rec.isTargeted = false;
