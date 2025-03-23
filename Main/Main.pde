@@ -19,14 +19,18 @@ int currentTrialIndex = 0;
 // Mouse position tracking
 Point trialStartPosition;
 
-// which cursor is in use?
+/**
+ * Enum representing the types of cursors
+ */
 public enum CursorType {
   STANDARD,
   AREA,
   BUBBLE
 }
 
-// State machine
+/**
+ * Enum representing different phases of experiment
+ */
 public enum ExperimentPhase {
   INSTRUCTIONS,
   BEFORE_TRIAL,
@@ -34,6 +38,9 @@ public enum ExperimentPhase {
   FINISHED
 }
 
+/**
+ * Sets up experiment by setting initial experiment phase
+ */
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
@@ -42,6 +49,9 @@ public void setup() {
   currentCondition = new Condition(cursorType, 10, 50, 30);
 }
 
+/**
+ * Manages the display aspect of the experiment using the different phases
+ */
 void draw() {
   background(200);
   /**
@@ -62,23 +72,11 @@ void draw() {
         trialStarted = true;
         // Record the mouse position when the trial starts
         trialStartPosition = new Point(mouseX, mouseY);
+        lookForSelectedTarget(trialStartPosition);
         currentCondition.startTrial(trialStartPosition);
       }
       renderRecs(displayedRecs);
-      if (cursorType == CursorType.AREA) {
-        // draw hitbox
-        noFill();
-        circle(mouseX, mouseY, areaHitBox * 2);
-      }
-
-      if (cursorType == CursorType.BUBBLE) {
-        float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
-        noFill();
-        stroke(255, 0, 0);  // Red outline for the bubble cursor hitbox
-        strokeWeight(2);
-        circle(mouseX, mouseY, bubbleRadius * 2);
-      }
-
+      drawHitbox();
       break;
     case FINISHED:
       displayCenteredText("Your job is complete, please look at the console for your test results.");
@@ -86,6 +84,9 @@ void draw() {
   }
 }
 
+/**
+ * Displays centred text
+ */
 void displayCenteredText(String text) {
   fill(0, 0, 0);
   textSize(25);
@@ -93,6 +94,9 @@ void displayCenteredText(String text) {
   text(text, width / 2, height / 2);
 }
 
+/**
+ * Manages mouse pressed events. Moves through the trial and records final trial data.
+ */
 void mousePressed() {
   switch (studyStage) {
     case INSTRUCTIONS:
@@ -126,57 +130,22 @@ void mousePressed() {
   }
 }
 
+/**
+ * Manages mouse movement events only during the trial phase. Updates the selected target based on mouse position.
+ */
 void mouseMoved() {
-  Point position = new Point(mouseX, mouseY);
+  if (studyStage != ExperimentPhase.TRIAL) return;
+  lookForSelectedTarget(new Point(mouseX, mouseY));
 
-  if (studyStage == ExperimentPhase.TRIAL) {
-    for (Rectangle rec : displayedRecs) {
-      rec.isTargeted = false;
-    }
-
-    Rectangle selectedRectangle = null;
-
-    switch (cursorType) {
-      case STANDARD:
-        for (Rectangle rec : displayedRecs) {
-          if (rec.contains(position)) {
-            selectedRectangle = rec;
-            break;
-          }
-        }
-        break;
-
-      case AREA:
-        float maxOverlap = 0;
-        for (Rectangle rec : displayedRecs) {
-          float overlapArea = computeOverlapArea(position, rec, areaHitBox);
-          if (overlapArea > maxOverlap) {
-            maxOverlap = overlapArea;
-            selectedRectangle = rec;
-          }
-        }
-        break;
-
-      case BUBBLE:
-        float bubbleRadius = computeBubbleRadius(position);
-        float closestDistance = Float.MAX_VALUE;
-
-        for (Rectangle rec : displayedRecs) {
-          float distance = distanceFromPointToRec(position, rec);
-          if (distance <= bubbleRadius && distance <= closestDistance) {
-            closestDistance = distance;
-            selectedRectangle = rec;
-          }
-        }
-        break;
-    }
-
-    if (selectedRectangle != null) {
-      selectedRectangle.isTargeted = true;
-    }
-  }
 }
 
+/**
+ * Creates an ArrayList of rectangles based on the experiment conditions and chooses a random rectangle to be
+ * the target.
+ *
+ * @param condition The condition of the experiment, defines rectangle size and distance between them.
+ * @return An ArrayList of Rectangles
+ */
 public ArrayList<Rectangle> constructRecs(Condition condition) {
   int recHeight = condition.targetSize;
   int recDistance = condition.targetDistance;
@@ -213,42 +182,75 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
   return createdRecs;
 }
 
+/**
+ * Renders the given list of rectangles
+ *
+ * @param recs ArrayList of rectangles to display
+ */
 public void renderRecs(ArrayList<Rectangle> recs) {
   for (Rectangle rec : recs) {
-    // Fill colour
+    // Fill colour 
     fill(rec.isTarget ? color(0, 200, 0) : color(255));
-
+    
     if (rec.isTargeted) {
-      if (cursorType == CursorType.AREA) {
-        // Blue border for area cursor target
-        stroke(0, 0, 255);
-        strokeWeight(3);
-      } else if (cursorType == CursorType.BUBBLE) {
-        // Red border for bubble cursor target
-        stroke(255, 0, 0);
-        strokeWeight(3);
+      strokeWeight(3);
+      // Choose stroke colour based on cursor type
+      switch(cursorType) {
+        case AREA:
+          stroke(0, 0, 255); // Blue for area cursor
+          break;
+        case STANDARD:
+          stroke(0, 255, 0); // Green for standard cursor
+          break;
+        default:
+          strokeWeight(1);
+          stroke(0);
+          break;
       }
     } else {
-      // No outline for standard cursor and non-targeted rectangles
       stroke(0);
       strokeWeight(1);
     }
-
-    // Draw rectangle
+    
+    // Draw the rectangle
     quad(rec.topLeft.x, rec.topLeft.y,
          rec.topRight.x, rec.topRight.y,
          rec.bottomRight.x, rec.bottomRight.y,
          rec.bottomLeft.x, rec.bottomLeft.y);
+    
+    // For bubble cursor, add extra bubble on targeted rectangle
+    if (rec.isTargeted && cursorType == CursorType.BUBBLE) {
+      noStroke();
+      fill(255, 0, 0, 100);
+      quad(rec.topLeft.x - 5, rec.topLeft.y - 5,
+           rec.topRight.x + 5, rec.topRight.y - 5,
+           rec.bottomRight.x + 5, rec.bottomRight.y + 5,
+           rec.bottomLeft.x - 5, rec.bottomLeft.y + 5);
+    }
   }
 }
 
+/**
+ * Calculates the distance from a given point to the closest edge of a rectangle.
+ *
+ * @param p A point from which the distance to a rectangle is calculated
+ * @param rec The rectangle from which the distance to the point is measured.
+ * @return The distance
+ */
 public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dx = max(rec.topLeft.x - p.x, 0, p.x - rec.topRight.x);
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
-  float distance = sqrt(dx * dx + dy * dy);
-  return distance;
+  return sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Calculates the overlapping area between a circle and a rectangle.
+ *
+ * @param cursor The point at the centre of the circle
+ * @param rec The rectangle
+ * @param radius The radius of the circle
+ * @return The area of the overlap
+ */
 float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
   float circleLeft = cursor.x - radius;
   float circleRight = cursor.x + radius;
@@ -266,6 +268,12 @@ float computeOverlapArea(Point cursor, Rectangle rec, float radius) {
   return overlapWidth * overlapHeight;
 }
 
+/**
+ * Computes the radius of the bubble cursor
+ *
+ * @param cursor The current position of the cursor
+ * @return The bubble radius
+ */
 float computeBubbleRadius(Point cursor) {
   float minDistance = Float.MAX_VALUE;
   float maxDistance = 0;
@@ -282,4 +290,74 @@ float computeBubbleRadius(Point cursor) {
 
   float radius = (minDistance < maxDistance) ? minDistance : maxDistance * 0.5;
   return max(radius, 10);  // Set min size so it doesn't return a speck
+}
+
+/**
+ * Draws the hitbox around the cursor. For an area cursor, draws a simple circle; for 
+ * a bubble cursor, draws a bubble effect with a dynamic radius.
+ */
+void drawHitbox() {
+  if (cursorType == CursorType.AREA) {
+      // draw hitbox
+      noFill();
+      circle(mouseX, mouseY, areaHitBox * 2);
+  } else if (cursorType == CursorType.BUBBLE) {
+      float bubbleRadius = computeBubbleRadius(new Point(mouseX, mouseY));
+      noStroke();
+      fill(255, 0, 0, 100);
+      circle(mouseX, mouseY, bubbleRadius * 2);
+  }
+}
+
+/**
+ * Looks for a selected rectangle as a target; does this based on the current cursor position, and the 
+ * type of cursor.
+ *
+ * @param position The current position of the cursor.
+ */
+void lookForSelectedTarget(Point position) {
+  for (Rectangle rec : displayedRecs) {
+    rec.isTargeted = false;
+  }
+
+  Rectangle selectedRectangle = null;
+
+  switch (cursorType) {
+    case STANDARD:
+      for (Rectangle rec : displayedRecs) {
+        if (rec.contains(position)) {
+          selectedRectangle = rec;
+          break;
+        }
+      }
+      break;
+
+    case AREA:
+      float maxOverlap = 0;
+      for (Rectangle rec : displayedRecs) {
+        float overlapArea = computeOverlapArea(position, rec, areaHitBox);
+        if (overlapArea > maxOverlap) {
+          maxOverlap = overlapArea;
+          selectedRectangle = rec;
+        }
+      }
+      break;
+
+    case BUBBLE:
+      float bubbleRadius = computeBubbleRadius(position);
+      float closestDistance = Float.MAX_VALUE;
+
+      for (Rectangle rec : displayedRecs) {
+        float distance = distanceFromPointToRec(position, rec);
+        if (distance <= bubbleRadius && distance <= closestDistance) {
+          closestDistance = distance;
+          selectedRectangle = rec;
+        }
+      }
+      break;
+  }
+
+  if (selectedRectangle != null) {
+    selectedRectangle.isTargeted = true;
+  }
 }
