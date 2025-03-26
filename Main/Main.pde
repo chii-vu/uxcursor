@@ -65,8 +65,6 @@ void draw() {
       displayCenteredText("Before condition\nClick to start the trial");
       break;
     case TRIAL:
-      // example usage vv
-      // Try varying the params below, and the width hyper param above
       if (!trialStarted) {
         displayedRecs = constructRecs(currentCondition);
         trialStarted = true;
@@ -148,7 +146,7 @@ void mouseMoved() {
  */
 public ArrayList<Rectangle> constructRecsGrid(Condition condition) {
   int recHeight = condition.targetSize;
-  int recDistance = (int)condition.averageDistance;
+  int recDistance = 50;
   int totalWidth = REC_WIDTH + recDistance;
   int totalHeight = recHeight + recDistance;
   int numX = width / (totalWidth);
@@ -197,6 +195,7 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
   target = newRec;
   createdRecs.add(newRec);
   
+  //the rest of the recs
   int numPlacedRecs = 1;
   outer:
   while (numPlacedRecs < condition.numRecs) {
@@ -217,6 +216,18 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
     createdRecs.add(newRec);
     numPlacedRecs++;
   }
+  
+  //calculate average distance
+  float avDistance = 0;
+  float numPairs = 0;
+  for (int i = 0; i < createdRecs.size(); i++) {
+    for (int j = i+1; j < createdRecs.size(); j++) {
+      avDistance += euclideanDistance(createdRecs.get(i).topLeft, createdRecs.get(j).topLeft);
+      numPairs++;
+    }
+  }
+  condition.averageDistance = avDistance/numPairs;
+  
   return createdRecs;
 }
 
@@ -280,6 +291,13 @@ public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
   return sqrt(dx * dx + dy * dy);
 }
+
+public float euclideanDistance(Point p1, Point p2) {
+  float xdiff = Math.abs(p1.x - p2.x);
+  float ydiff = Math.abs(p1.y - p2.y);
+  return (float)Math.sqrt(xdiff * xdiff + ydiff * ydiff);
+}
+
 
 /**
  * Calculates the overlapping area between a circle and a rectangle.
