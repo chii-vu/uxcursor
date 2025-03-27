@@ -46,7 +46,7 @@ public void setup() {
   studyStage = ExperimentPhase.INSTRUCTIONS;
   cursorType = CursorType.BUBBLE;
   // Test with sample condition
-  currentCondition = new Condition(cursorType, 10, 50, 30);
+  currentCondition = new Condition(cursorType, 10, 30, 30);
 }
 
 /**
@@ -65,8 +65,6 @@ void draw() {
       displayCenteredText("Before condition\nClick to start the trial");
       break;
     case TRIAL:
-      // example usage vv
-      // Try varying the params below, and the width hyper param above
       if (!trialStarted) {
         displayedRecs = constructRecs(currentCondition);
         trialStarted = true;
@@ -146,9 +144,9 @@ void mouseMoved() {
  * @param condition The condition of the experiment, defines rectangle size and distance between them.
  * @return An ArrayList of Rectangles
  */
-public ArrayList<Rectangle> constructRecs(Condition condition) {
+public ArrayList<Rectangle> constructRecsGrid(Condition condition) {
   int recHeight = condition.targetSize;
-  int recDistance = condition.targetDistance;
+  int recDistance = 50;
   int totalWidth = REC_WIDTH + recDistance;
   int totalHeight = recHeight + recDistance;
   int numX = width / (totalWidth);
@@ -179,6 +177,57 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
       createdRecs.add(newRec);
     }
   }
+  return createdRecs;
+}
+
+public ArrayList<Rectangle> constructRecs(Condition condition) {
+  ArrayList<Rectangle> createdRecs = new ArrayList<Rectangle>();
+  
+  //first rec
+  int x = (int)random(0, width - REC_WIDTH);
+  int y = (int)random(0, height - condition.targetSize);
+  Point topLeft = new Point(x, y);
+  Point topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
+  Point bottomLeft = new Point(topLeft.x, topLeft.y + condition.targetSize);
+  Point bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + condition.targetSize);
+  Rectangle newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
+  newRec.isTarget = true;
+  target = newRec;
+  createdRecs.add(newRec);
+  
+  //the rest of the recs
+  int numPlacedRecs = 1;
+  outer:
+  while (numPlacedRecs < condition.numRecs) {
+    int newx = (int)random(0, width - REC_WIDTH);
+    int newy = (int)random(0, height - condition.targetSize);
+    
+    
+    for (Rectangle rec : createdRecs) {
+      if (Math.abs(newx - rec.topLeft.x) < REC_WIDTH && Math.abs(newy - rec.topLeft.y) < condition.targetSize) {
+        continue outer;
+      }
+    }
+    topLeft = new Point(newx, newy);
+    topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
+    bottomLeft = new Point(topLeft.x, topLeft.y + condition.targetSize);
+    bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + condition.targetSize);
+    newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
+    createdRecs.add(newRec);
+    numPlacedRecs++;
+  }
+  
+  //calculate average distance
+  float avDistance = 0;
+  float numPairs = 0;
+  for (int i = 0; i < createdRecs.size(); i++) {
+    for (int j = i+1; j < createdRecs.size(); j++) {
+      avDistance += euclideanDistance(createdRecs.get(i).topLeft, createdRecs.get(j).topLeft);
+      numPairs++;
+    }
+  }
+  condition.averageDistance = avDistance/numPairs;
+  
   return createdRecs;
 }
 
@@ -242,6 +291,13 @@ public float distanceFromPointToRec(Point p, Rectangle rec) {
   float dy = max(rec.topLeft.y - p.y, 0, p.y - rec.bottomLeft.y);
   return sqrt(dx * dx + dy * dy);
 }
+
+public float euclideanDistance(Point p1, Point p2) {
+  float xdiff = Math.abs(p1.x - p2.x);
+  float ydiff = Math.abs(p1.y - p2.y);
+  return (float)Math.sqrt(xdiff * xdiff + ydiff * ydiff);
+}
+
 
 /**
  * Calculates the overlapping area between a circle and a rectangle.

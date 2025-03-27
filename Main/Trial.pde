@@ -6,11 +6,13 @@ public class Trial {
   Point startPosition; // Mouse position at the start and
   Point endPosition;   // End of the trial
   float targetWidth;   // Width of the target rectangle
+  float averageDistance; // Rectangle average relative distance during trial
 
-  public Trial(Point startPosition, float targetWidth) {
+  public Trial(Point startPosition, float targetWidth, float averageDistance) {
     this.startTime = System.currentTimeMillis();
     this.startPosition = startPosition;
     this.targetWidth = targetWidth;
+    this.averageDistance = averageDistance;
   }
 
   public void endTrial(boolean isCorrect, Point endPosition) {
@@ -25,9 +27,9 @@ public class Trial {
     return (float) (Math.log(distance / targetWidth + 1) / Math.log(2));
   }
 
-  public String toCSV(CursorType cursorType, int targetDistance, int targetSize) {
+  public String toCSV(CursorType cursorType, int targetSize) {
     long completionTime = endTime - startTime;
-    return String.format("%s,%d,%d,%d,%d,%.2f",
-        cursorType, targetDistance, targetSize, completionTime, error, fittsID);
+    return String.format("%s,%f,%d,%d,%d,%.2f",
+        cursorType, averageDistance, targetSize, completionTime, error, fittsID);
   }
 }
