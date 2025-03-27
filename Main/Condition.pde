@@ -33,7 +33,7 @@ public class Condition {
   public void printTrialsCSV() {
     // Print CSV header
     System.out.println("CursorType,AverageDistance,TargetSize,CompletionTime,Error,FittsID");
-    // Print each trial in CSV format (we'll write this to a file later)
+    // Print each trial in CSV format (TODO: write this to a file later)
     for (Trial trial : trials) {
       System.out.println(trial.toCSV(cursorType, targetSize));
     }
