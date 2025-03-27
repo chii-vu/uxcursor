@@ -31,7 +31,7 @@ public class Condition {
   }
   
   public void printTrialsCSV() {
-    String filename = "results_" + cursorType + "_" + numRecs + "_" + targetSize + ".csv";
+    String filename = "results/" + cursorType + "_" + numRecs + "_" + targetSize + ".csv";
     PrintWriter output = createWriter(filename);
     
     // Print CSV header
