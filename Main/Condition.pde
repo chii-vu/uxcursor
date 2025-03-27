@@ -29,13 +29,21 @@ public class Condition {
   public ArrayList<Trial> getTrials() {
     return trials;
   }
-
+  
   public void printTrialsCSV() {
+    String filename = "results_" + cursorType + "_" + numRecs + "_" + targetSize + ".csv";
+    PrintWriter output = createWriter(filename);
+    
     // Print CSV header
-    System.out.println("CursorType,AverageDistance,TargetSize,CompletionTime,Error,FittsID");
-    // Print each trial in CSV format (TODO: write this to a file later)
+    output.println("CursorType,AverageDistance,TargetSize,CompletionTime,Error,FittsID");
+    
+    // Print each trial
     for (Trial trial : trials) {
-      System.out.println(trial.toCSV(cursorType, targetSize));
+      output.println(trial.toCSV(cursorType, targetSize));
     }
+    
+    output.flush();
+    output.close();
+    println("Saved results to " + filename);
   }
 }
