@@ -20,9 +20,9 @@ public class Condition {
     trials.add(new Trial(startPosition, targetSize, averageDistance));
   }
 
-  public void endTrial(boolean isCorrect, Point endPosition) {
+  public void endTrial(Point endPosition) {
     if (!trials.isEmpty()) {
-      trials.get(trials.size() - 1).endTrial(isCorrect, endPosition);
+      trials.get(trials.size() - 1).endTrial(endPosition);
     }
   }
   
@@ -30,6 +30,10 @@ public class Condition {
     if (!trials.isEmpty()) {
       trials.get(trials.size() - 1).addError();
     }
+  }
+  
+  public int getError(){
+    return trials.get(trials.size() - 1).getError();
   }
 
   public ArrayList<Trial> getTrials() {

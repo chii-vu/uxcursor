@@ -15,9 +15,8 @@ public class Trial {
     this.averageDistance = averageDistance;
   }
 
-  public void endTrial(boolean isCorrect, Point endPosition) {
+  public void endTrial(Point endPosition) {
     this.endTime = System.currentTimeMillis();
-    this.error += isCorrect ? 0 : 1;
     this.endPosition = endPosition;
     this.fittsID = calculateFittsID();
   }
@@ -35,5 +34,9 @@ public class Trial {
   
   public void addError(){
     error += 1;
+  }
+  
+  public int getError(){
+    return error;
   }
 }

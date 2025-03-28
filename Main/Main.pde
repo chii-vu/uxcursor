@@ -126,10 +126,13 @@ void mousePressed() {
         // If not clicked, record error
         if(!isCorrect){
           conditionManager.getCurrentCondition().addError();
-          break;
+          // Five errors are allowed - otherwise end trial
+          if(conditionManager.getCurrentCondition().getError() < 5){
+            break;
+          }
         }
-        // Otherwise, end trial
-        conditionManager.getCurrentCondition().endTrial(isCorrect, trialEndPosition);
+        // End trial
+        conditionManager.getCurrentCondition().endTrial(trialEndPosition);
 
         if (currentTrialIndex < conditionManager.getCurrentCondition().numTrials - 1) {
           currentTrialIndex++;
