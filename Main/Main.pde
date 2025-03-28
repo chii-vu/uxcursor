@@ -12,8 +12,8 @@ CursorType cursorType;
 // radius size of Area Cursor hitbox
 float areaHitBox = 35;
 
-// Condition and Trial management
-Condition currentCondition;
+// Condition management
+ConditionManager conditionManager;
 int currentTrialIndex = 0;
 
 // Mouse position tracking
@@ -35,6 +35,7 @@ public enum ExperimentPhase {
   INSTRUCTIONS,
   BEFORE_TRIAL,
   TRIAL,
+  BETWEEN_CONDITIONS,
   FINISHED
 }
 
@@ -44,9 +45,12 @@ public enum ExperimentPhase {
 public void setup() {
   fullScreen();
   studyStage = ExperimentPhase.INSTRUCTIONS;
-  cursorType = CursorType.BUBBLE;
-  // Test with sample condition
-  currentCondition = new Condition(cursorType, 10, 30, 30);
+  conditionManager = new ConditionManager();
+  
+  // Set initial cursor type
+  if (conditionManager.getCurrentCondition() != null) {
+    cursorType = conditionManager.getCurrentCondition().cursorType;
+  }
 }
 
 /**
@@ -54,30 +58,37 @@ public void setup() {
  */
 void draw() {
   background(200);
-  /**
-   * Part of the state machine that displays the process of the trials through all the conditions
-   */
+  
   switch (studyStage) {
     case INSTRUCTIONS:
-      displayCenteredText("Instructions\nClick on the target rectangle");
+      displayCenteredText("Instructions\nClick on the target rectangle\n\n" + 
+                         "Condition " + conditionManager.getCurrentConditionNumber() + 
+                         " of " + conditionManager.getTotalConditions() + 
+                         "\nCursor: " + cursorType + 
+                         "\nTargets: " + conditionManager.getCurrentCondition().numRecs + 
+                         "\nSize: " + conditionManager.getCurrentCondition().targetSize);
       break;
     case BEFORE_TRIAL:
-      displayCenteredText("Before condition\nClick to start the trial");
+      displayCenteredText("Before trial " + (currentTrialIndex + 1) + 
+                         " of " + conditionManager.getCurrentCondition().numTrials + 
+                         "\nClick to start");
       break;
     case TRIAL:
       if (!trialStarted) {
-        displayedRecs = constructRecs(currentCondition);
+        displayedRecs = constructRecs(conditionManager.getCurrentCondition());
         trialStarted = true;
-        // Record the mouse position when the trial starts
         trialStartPosition = new Point(mouseX, mouseY);
         lookForSelectedTarget(trialStartPosition);
-        currentCondition.startTrial(trialStartPosition);
+        conditionManager.getCurrentCondition().startTrial(trialStartPosition);
       }
       renderRecs(displayedRecs);
       drawHitbox();
       break;
     case FINISHED:
       displayCenteredText("Your job is complete, please look at the console for your test results.");
+      break;
+    case BETWEEN_CONDITIONS:
+      displayCenteredText("Condition completed\nClick to continue to next condition");
       break;
   }
 }
@@ -111,15 +122,31 @@ void mousePressed() {
 
         // Record the mouse position when the trial ends
         Point trialEndPosition = new Point(mouseX, mouseY);
-        currentCondition.endTrial(isCorrect, trialEndPosition);
+        conditionManager.getCurrentCondition().endTrial(isCorrect, trialEndPosition);
 
-        if (currentTrialIndex < currentCondition.numTrials - 1) {
+        if (currentTrialIndex < conditionManager.getCurrentCondition().numTrials - 1) {
           currentTrialIndex++;
           trialStarted = false;
         } else {
-          studyStage = ExperimentPhase.FINISHED;
-          currentCondition.printTrialsCSV();
+          // Save data for this condition
+          conditionManager.getCurrentCondition().printTrialsCSV();
+          
+          if (conditionManager.hasMoreConditions()) {
+            studyStage = ExperimentPhase.BETWEEN_CONDITIONS;
+          } else {
+            studyStage = ExperimentPhase.FINISHED;
+          }
         }
+      }
+      break;
+
+    case BETWEEN_CONDITIONS:
+      conditionManager.nextCondition();
+      if (conditionManager.hasMoreConditions()) {
+        currentTrialIndex = 0;
+        trialStarted = false;
+        cursorType = conditionManager.getCurrentCondition().cursorType;
+        studyStage = ExperimentPhase.INSTRUCTIONS;
       }
       break;
 
