@@ -11,8 +11,8 @@ public class ConditionManager {
     
     // TODO: adjust based on testing
     CursorType[] cursorTypes = {CursorType.STANDARD, CursorType.AREA, CursorType.BUBBLE};
-    int[] targetCounts = {5, 10, 35, 60, 80};
-    int[] targetSizes = {15, 30, 60};
+    int[] targetCounts = {5, 15, 40, 60, 80};
+    int[] targetSizes = {10, 30, 60};
     
     // Some triple loop action to create all the combinations
     for (CursorType ct : cursorTypes) {
@@ -24,7 +24,7 @@ public class ConditionManager {
     }
     
     // Maybe shuffle conditions to avoid bias?
-    // java.util.Collections.shuffle(allConditions);
+    java.util.Collections.shuffle(allConditions);
   }
   
   // Getters
