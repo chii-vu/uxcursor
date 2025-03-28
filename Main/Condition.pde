@@ -20,10 +20,20 @@ public class Condition {
     trials.add(new Trial(startPosition, targetSize, averageDistance));
   }
 
-  public void endTrial(boolean isCorrect, Point endPosition) {
+  public void endTrial(Point endPosition) {
     if (!trials.isEmpty()) {
-      trials.get(trials.size() - 1).endTrial(isCorrect, endPosition);
+      trials.get(trials.size() - 1).endTrial(endPosition);
     }
+  }
+  
+  public void addError(){
+    if (!trials.isEmpty()) {
+      trials.get(trials.size() - 1).addError();
+    }
+  }
+  
+  public int getError(){
+    return trials.get(trials.size() - 1).getError();
   }
 
   public ArrayList<Trial> getTrials() {
@@ -31,15 +41,21 @@ public class Condition {
   }
   
   public void printTrialsCSV() {
-    String filename = "results/" + cursorType + "_" + numRecs + "_" + targetSize + ".csv";
+    String timestamp = year() + "_" + month() + "_" + day() + "__" + hour() + "_" + minute() + "_" + second();
+    String filename = "results/" + cursorType + "_" + numRecs + "_" + targetSize + "__" + timestamp + ".csv";
     PrintWriter output = createWriter(filename);
     
     // Print CSV header
     output.println("CursorType,AverageDistance,TargetSize,CompletionTime,Error,FittsID");
     
-    // Print each trial
+    int count = 0;
+    // the number of trials we don't record
+    int practiceTrials = 5;
     for (Trial trial : trials) {
-      output.println(trial.toCSV(cursorType, targetSize));
+      count++;
+      if(count > practiceTrials){
+        output.println(trial.toCSV(cursorType, targetSize));
+      }
     }
     
     output.flush();

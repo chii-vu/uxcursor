@@ -7,24 +7,43 @@ public class ConditionManager {
   
   public ConditionManager() {
     allConditions = new ArrayList<Condition>();
+    ArrayList<Condition> standardConditions = new ArrayList<Condition>();
+    ArrayList<Condition> areaConditions = new ArrayList<Condition>();
+    ArrayList<Condition> bubbleConditions = new ArrayList<Condition>();
     currentConditionIndex = 0;
     
     // TODO: adjust based on testing
     CursorType[] cursorTypes = {CursorType.STANDARD, CursorType.AREA, CursorType.BUBBLE};
-    int[] targetCounts = {5, 10, 35, 60, 80};
-    int[] targetSizes = {15, 30, 60};
+    int[] targetCounts = {5, 15, 40, 60, 80};
+    int[] targetSizes = {10, 30, 60};
     
     // Some triple loop action to create all the combinations
     for (CursorType ct : cursorTypes) {
       for (int count : targetCounts) {
         for (int size : targetSizes) {
-          allConditions.add(new Condition(ct, 10, count, size)); // 10 trials per condition
+          if(ct == CursorType.STANDARD){
+            standardConditions.add(new Condition(ct, 20, count, size)); // 20 trials per condition
+          }
+          else if(ct == CursorType.AREA){
+            areaConditions.add(new Condition(ct, 20, count, size)); // 20 trials per condition
+          }
+          else if(ct == CursorType.BUBBLE){
+            bubbleConditions.add(new Condition(ct, 20, count, size)); // 20 trials per condition
+          }
+
         }
       }
     }
+    // Shuffle conditions per CursorType
+    java.util.Collections.shuffle(standardConditions);
+    java.util.Collections.shuffle(areaConditions);
+    java.util.Collections.shuffle(bubbleConditions);
     
-    // Maybe shuffle conditions to avoid bias?
-    // java.util.Collections.shuffle(allConditions);
+    // Add together
+    allConditions.addAll(standardConditions);
+    allConditions.addAll(areaConditions);
+    allConditions.addAll(bubbleConditions);
+    
   }
   
   // Getters
