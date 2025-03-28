@@ -122,6 +122,13 @@ void mousePressed() {
 
         // Record the mouse position when the trial ends
         Point trialEndPosition = new Point(mouseX, mouseY);
+        
+        // If not clicked, record error
+        if(!isCorrect){
+          conditionManager.getCurrentCondition().addError();
+          break;
+        }
+        // Otherwise, end trial
         conditionManager.getCurrentCondition().endTrial(isCorrect, trialEndPosition);
 
         if (currentTrialIndex < conditionManager.getCurrentCondition().numTrials - 1) {

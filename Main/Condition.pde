@@ -25,6 +25,12 @@ public class Condition {
       trials.get(trials.size() - 1).endTrial(isCorrect, endPosition);
     }
   }
+  
+  public void addError(){
+    if (!trials.isEmpty()) {
+      trials.get(trials.size() - 1).addError();
+    }
+  }
 
   public ArrayList<Trial> getTrials() {
     return trials;
