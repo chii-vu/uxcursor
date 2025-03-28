@@ -37,7 +37,8 @@ public class Condition {
   }
   
   public void printTrialsCSV() {
-    String filename = "results/" + cursorType + "_" + numRecs + "_" + targetSize + ".csv";
+    String timestamp = year() + "_" + month() + "_" + day() + "__" + hour() + "_" + minute() + "_" + second();
+    String filename = "results/" + cursorType + "_" + numRecs + "_" + targetSize + "__" + timestamp + ".csv";
     PrintWriter output = createWriter(filename);
     
     // Print CSV header

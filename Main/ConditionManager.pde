@@ -18,12 +18,12 @@ public class ConditionManager {
     for (CursorType ct : cursorTypes) {
       for (int count : targetCounts) {
         for (int size : targetSizes) {
-          allConditions.add(new Condition(ct, 10, count, size)); // 10 trials per condition
+          allConditions.add(new Condition(ct, 20, count, size)); // 20 trials per condition
         }
       }
     }
     
-    // Maybe shuffle conditions to avoid bias?
+    // Shuffle conditions to avoid bias
     java.util.Collections.shuffle(allConditions);
   }
   
