@@ -44,9 +44,14 @@ public class Condition {
     // Print CSV header
     output.println("CursorType,AverageDistance,TargetSize,CompletionTime,Error,FittsID");
     
-    // Print each trial
+    int count = 0;
+    // the number of trials we don't record
+    int practiceTrials = 5;
     for (Trial trial : trials) {
-      output.println(trial.toCSV(cursorType, targetSize));
+      count++;
+      if(count > practiceTrials){
+        output.println(trial.toCSV(cursorType, targetSize));
+      }
     }
     
     output.flush();
