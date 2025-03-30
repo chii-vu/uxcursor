@@ -278,7 +278,7 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
     }
 
     // If retries are exhausted and still can't place a rectangle, break out of the loop
-    println("Warning: Could not place all rectangles. Reducing the number of rectangles.");
+    println("Warning: Could not place all rectangles. Reducing to " + numPlacedRecs + " rectangles.");
     condition.numRecs = numPlacedRecs;
     break;
   }
