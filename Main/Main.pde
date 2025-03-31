@@ -220,17 +220,6 @@ public ArrayList<Rectangle> constructRecsGrid(Condition condition) {
 public ArrayList<Rectangle> constructRecs(Condition condition) {
   ArrayList<Rectangle> createdRecs = new ArrayList<Rectangle>();
   
-  // Calculate max no. of rectangles that can fit on the screen
-  int maxRecsX = width / REC_WIDTH;
-  int maxRecsY = height / condition.targetSize;
-  int maxRecs = maxRecsX * maxRecsY;
-
-  // Cap no. of rectangles to maxRecs
-  if (condition.numRecs > maxRecs) {
-    println("Warning: Too many rectangles for the screen. Adjusting to fit.");
-    condition.numRecs = maxRecs;
-  }
-
   //first rec
   int x = (int)random(0, width - REC_WIDTH);
   int y = (int)random(0, height - condition.targetSize);
