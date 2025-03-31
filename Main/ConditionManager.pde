@@ -15,7 +15,7 @@ public class ConditionManager {
     // TODO: adjust based on testing
     CursorType[] cursorTypes = {CursorType.STANDARD, CursorType.AREA, CursorType.BUBBLE};
     int[] targetCounts = {5, 15, 40, 60, 80};
-    int[] targetSizes = {10, 30, 60};
+    int[] targetSizes = {10, 30, 50};
     
     // Some triple loop action to create all the combinations
     for (CursorType ct : cursorTypes) {
@@ -30,7 +30,6 @@ public class ConditionManager {
           else if(ct == CursorType.BUBBLE){
             bubbleConditions.add(new Condition(ct, 20, count, size)); // 20 trials per condition
           }
-
         }
       }
     }

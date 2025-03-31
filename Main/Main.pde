@@ -234,24 +234,42 @@ public ArrayList<Rectangle> constructRecs(Condition condition) {
   
   //the rest of the recs
   int numPlacedRecs = 1;
+  int maxRetries = 100; // Max retries for placing a rectangle
+
+  // Keep placing rectangles until can't place any more or all are placed
   outer:
   while (numPlacedRecs < condition.numRecs) {
-    int newx = (int)random(0, width - REC_WIDTH);
-    int newy = (int)random(0, height - condition.targetSize);
-    
-    
-    for (Rectangle rec : createdRecs) {
-      if (Math.abs(newx - rec.topLeft.x) < REC_WIDTH && Math.abs(newy - rec.topLeft.y) < condition.targetSize) {
+    int retries = 0;
+    while (retries < maxRetries) {
+      int newx = (int)random(0, width - REC_WIDTH);
+      int newy = (int)random(0, height - condition.targetSize);
+
+      boolean overlaps = false;
+      for (Rectangle rec : createdRecs) {
+        if (Math.abs(newx - rec.topLeft.x) < REC_WIDTH && Math.abs(newy - rec.topLeft.y) < condition.targetSize) {
+          overlaps = true;
+          break;
+        }
+      }
+
+      if (!overlaps) {
+        topLeft = new Point(newx, newy);
+        topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
+        bottomLeft = new Point(topLeft.x, topLeft.y + condition.targetSize);
+        bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + condition.targetSize);
+        newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
+        createdRecs.add(newRec);
+        numPlacedRecs++;
         continue outer;
       }
+
+      retries++;
     }
-    topLeft = new Point(newx, newy);
-    topRight = new Point(topLeft.x + REC_WIDTH, topLeft.y);
-    bottomLeft = new Point(topLeft.x, topLeft.y + condition.targetSize);
-    bottomRight = new Point(topLeft.x + REC_WIDTH, topLeft.y + condition.targetSize);
-    newRec = new Rectangle(topLeft, topRight, bottomLeft, bottomRight);
-    createdRecs.add(newRec);
-    numPlacedRecs++;
+
+    // If retries are exhausted and still can't place a rectangle, break out of the loop
+    println("Warning: Could not place all rectangles. Reducing to " + numPlacedRecs + " rectangles.");
+    condition.numRecs = numPlacedRecs;
+    break;
   }
   
   //calculate average distance
