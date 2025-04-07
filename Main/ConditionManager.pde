@@ -12,7 +12,7 @@ public class ConditionManager {
     ArrayList<Condition> bubbleConditions = new ArrayList<Condition>();
     currentConditionIndex = 0;
     
-    // TODO: adjust based on testing
+    // Define the conditions
     CursorType[] cursorTypes = {CursorType.STANDARD, CursorType.AREA, CursorType.BUBBLE};
     int[] targetCounts = {5, 15, 40, 60, 80};
     int[] targetSizes = {10, 30, 50};
