@@ -4,6 +4,8 @@
 
 This project explores the efficiency and accuracy of selecting items in graphical user interfaces using three different cursor designs: the Standard Cursor, the Area Cursor, and the Bubble Cursor. The goal is to identify which cursor improves user performance in different interface conditions.
 
+https://github.com/user-attachments/assets/6a4c0386-f5a7-4fd5-baaa-822034c2c377
+
 ## Team Members
 
 - Steven Baldwin
